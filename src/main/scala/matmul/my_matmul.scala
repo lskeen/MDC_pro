@@ -9,8 +9,8 @@ import chisel3.util._
 
 class MyMatmul extends Module {
   val io = IO(new Bundle {
-    val row = Input(UInt(64.W))
-    val col = Input(UInt(64.W))
+    val row = Input(UInt(128.W))
+    val col = Input(UInt(128.W))
     val result = Output(UInt(32.W))
   })
 
@@ -38,11 +38,35 @@ class MyMatmul extends Module {
     prod2.io.in1 := unpacked_col.b2_1
     val prod2_result = prod2.io.out
 
-    val sum = Module(new MyFloatOpp)
-    sum.io.opp := 0.U
-    sum.io.in0 := prod1_result
-    sum.io.in1 := prod2_result
-    val sum_result = sum.io.out
+    val prod3 = Module(new MyFloatOpp)
+    prod3.io.opp := 1.U
+    prod3.io.in0 := unpacked_row.a1_3
+    prod3.io.in1 := unpacked_col.b3_1
+    val prod3_result = prod3.io.out
 
-    io.result := sum_result
+    val prod4 = Module(new MyFloatOpp)
+    prod4.io.opp := 1.U
+    prod4.io.in0 := unpacked_row.a1_4
+    prod4.io.in1 := unpacked_col.b4_1
+    val prod4_result = prod4.io.out
+
+    val sum1 = Module(new MyFloatOpp)
+    sum1.io.opp := 0.U
+    sum1.io.in0 := prod1_result
+    sum1.io.in1 := prod2_result
+    val sum1_result = sum1.io.out
+
+    val sum2 = Module(new MyFloatOpp)
+    sum2.io.opp := 0.U
+    sum2.io.in0 := sum1_result
+    sum2.io.in1 := prod3_result
+    val sum2_result = sum2.io.out
+    
+    val sum3 = Module(new MyFloatOpp)
+    sum3.io.opp := 0.U
+    sum3.io.in0 := sum2_result
+    sum3.io.in1 := prod4_result
+    val sum3_result = sum3.io.out
+
+    io.result := sum3_result
 }
